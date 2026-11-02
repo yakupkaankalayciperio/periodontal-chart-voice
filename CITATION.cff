@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "Bu yazılımı kullanırsanız lütfen aşağıdaki şekilde atıf yapın. / If you use this software, please cite it as below."
+title: "Periodontal Chart-Voice"
+abstract: "A browser-based periodontal chart filled in by voice dictation (Turkish speech recognition). It records probing depth, clinical attachment loss, gingival margin, plaque index and gingival index at six sites per tooth, bleeding on probing per tooth and furcation involvement, and the chart can be printed or saved as a file."
+type: software
+authors:
+  - family-names: "Kalaycı"
+    given-names: "Yakup Kaan"
+    affiliation: "Burdur Mehmet Akif Ersoy Üniversitesi, Diş Hekimliği Fakültesi, Periodontoloji Anabilim Dalı"
+    orcid: "https://orcid.org/0000-0001-8439-0808"
+    email: "ykalayci@mehmetakif.edu.tr"
+version: "1.0.0"
+date-released: "2026-11-02"
+license: CC-BY-NC-SA-4.0
+repository-code: "https://github.com/yakupkaankalayciperio/periodontal-chart-voice"
+url: "https://yakupkaankalayciperio.github.io/periodontal-chart-voice/"
+keywords:
+  - periodontology
+  - periodontal chart
+  - dentistry
+  - speech recognition
+  - voice dictation
+  - clinical documentation

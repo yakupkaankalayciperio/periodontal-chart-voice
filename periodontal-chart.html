@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  Periodontal Chart-Voice
+  Created by Yakup Kaan Kalaycı, DDS, PhD
+
+  Copyright (c) 2026 Yakup Kaan Kalaycı
+
+  This work is licensed under the Creative Commons
+  Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0).
+  https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+  Additional permission (clinical use): dentists, physicians and other healthcare
+  professionals, and the clinics, hospitals and institutions they work in
+  (including private, fee-charging practices), may use this software free of
+  charge for patient care, clinical documentation, teaching and research.
+  Selling it, or offering it as part of a paid product or service, requires the
+  licensor's permission. See the LICENSE file.
+-->
+<link rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<title>Periodontal Chart-Voice</title>
+<style>
+:root{
+  --ink:#1b2333; --muted:#687386; --line:#b6bfcc; --line2:#e1e5ec; --bg:#eceff4; --paper:#fff;
+  --navy:#1c2940; --accent:#1f6feb; --accent-soft:#e3edff;
+  --red:#d93838; --red-soft:#fde3e3; --blue:#2563eb; --ok:#17804a; --warn:#9a6400;
+  --lab:132px; --rh:18px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font:13px/1.4 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif}
+button,input,select,textarea{font:inherit; color:inherit}
+svg.i{width:16px; height:16px; flex:none}
+
+/* Üst çubuk */
+.appbar{display:flex; align-items:center; justify-content:space-between; gap:12px 20px; padding:10px 18px; background:var(--navy); color:#fff; flex-wrap:wrap}
+.brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; letter-spacing:.02em}
+.brand svg{width:22px; height:22px}
+.brand-text{display:flex; flex-direction:column; line-height:1.2}
+.brand small{font-weight:400; opacity:.65; font-size:9.5px; letter-spacing:.02em}
+.brand small.brand-contact{font-size:8.5px; opacity:.55}
+.brand a{color:inherit; text-decoration:none}
+.brand a:hover{text-decoration:underline}
+.actions{display:flex; gap:8px; flex-wrap:wrap}
+.btn{border:1px solid transparent; background:#fff; color:var(--navy); border-radius:8px; padding:7px 14px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:7px; white-space:nowrap}
+.btn:hover{filter:brightness(.94)}
+.btn.ghost{background:transparent; color:#fff; border-color:rgba(255,255,255,.32)}
+.btn.ghost:hover{background:rgba(255,255,255,.1); filter:none}
+.btn.mic.on{background:var(--red); color:#fff}
+
+/* Hakkında */
+.about{border:0; border-radius:12px; padding:22px 26px 18px; width:min(520px, calc(100vw - 32px)); box-shadow:0 20px 60px rgba(20,30,50,.3); color:var(--ink); font-size:13px; line-height:1.5}
+.about::backdrop{background:rgba(20,30,50,.45)}
+.about h2{margin:0; font-size:18px}
+.about h3{margin:14px 0 3px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.about p{margin:0}
+.about .about-sub{color:var(--muted); font-size:12px; margin-top:2px}
+.about form{margin-top:18px; text-align:right}
+.about .btn{background:var(--navy); color:#fff}
+.about a{color:var(--accent)}
+
+/* Ayarlar */
+.settings{background:#fff; border-bottom:1px solid var(--line2); padding:10px 18px; display:flex; flex-wrap:wrap; gap:10px 28px; align-items:center; font-size:12.5px}
+.settings label{display:flex; align-items:center; gap:8px}
+.settings select{border:1px solid var(--line); border-radius:6px; padding:4px 6px; background:#fff}
+.settings .hint{color:var(--muted); margin:0}
+
+/* Durum çubuğu */
+.status{position:sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid var(--line2); box-shadow:0 2px 8px rgba(20,30,50,.06); padding:8px 18px 6px; display:grid; grid-template-columns:auto minmax(0,1fr) minmax(220px,36%); gap:4px 22px; align-items:center}
+.st-state{display:flex; align-items:center; gap:8px}
+.dot{width:11px; height:11px; border-radius:50%; background:#b7bfcc; flex:none}
+.dot.on{background:var(--red); animation:pulse 1.3s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,56,56,.5)}70%{box-shadow:0 0 0 8px rgba(217,56,56,0)}100%{box-shadow:0 0 0 0 rgba(217,56,56,0)}}
+.pill{padding:2px 9px; border-radius:99px; font-size:12px; font-weight:600; background:#eef1f5; color:var(--muted); white-space:nowrap}
+.pill.idle{background:#eef1f5; color:var(--ink)}
+.pill.act{background:#e2f4e9; color:var(--ok)}
+.pill.pause{background:#fff2d6; color:var(--warn)}
+.st-mode{display:flex; align-items:baseline; gap:14px; min-width:0; overflow:hidden}
+#stMode{font-size:22px; font-weight:700; white-space:nowrap}
+#stPos{font-size:16px; color:var(--accent); font-weight:600; white-space:nowrap}
+.st-heard{font-size:12.5px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+#stHeard{color:var(--ink)}
+.st-msg{grid-column:1/-1; font-size:12.5px; min-height:18px; color:var(--muted)}
+.st-msg.err{color:var(--red); font-weight:600}
+.st-msg.ok{color:var(--ok)}
+
+/* Sayfa */
+.wrap{padding:16px 16px 90px; overflow-x:auto}
+.banner{width:1050px; max-width:100%; margin:0 auto 12px; background:#fff8e6; border:1px solid #efd48a; border-radius:8px; padding:9px 14px; display:flex; gap:12px; align-items:center; justify-content:space-between; font-size:12.5px}
+.banner .btn{padding:5px 11px; border-color:#d9c27a}
+.sheet{width:1050px; margin:0 auto; background:var(--paper); border-radius:10px; box-shadow:0 1px 3px rgba(20,30,50,.08), 0 8px 24px rgba(20,30,50,.06); padding:16px 22px 18px}
+.head{display:flex; align-items:flex-end; gap:22px; margin-bottom:10px; padding-bottom:10px; border-bottom:2px solid var(--ink)}
+.head h1{margin:0; font-size:21px; letter-spacing:.05em; white-space:nowrap}
+.fields{display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.95fr) minmax(0,.95fr) minmax(0,1.2fr); gap:6px 14px; flex:1; min-width:0}
+.fields label, .notes{display:flex; flex-direction:column; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600}
+.fields input{border:0; border-bottom:1px solid var(--line); padding:3px 2px; font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink); background:transparent; outline:none; font-weight:500; min-width:0}
+.fields input:focus{border-bottom-color:var(--accent)}
+
+/* Chart ızgarası */
+.jaw{margin:2px 0}
+.row{display:grid; grid-template-columns:var(--lab) repeat(8,54px) 10px repeat(8,54px); height:var(--rh)}
+.lab{font-size:11px; color:var(--muted); text-align:right; padding-right:8px; line-height:var(--rh); white-space:nowrap; overflow:hidden}
+.tc{display:flex; border-left:1px solid var(--line); border-bottom:1px solid var(--line2); min-width:0}
+.tc.end, .tn.end{border-right:1px solid var(--line)}
+.c{flex:1; min-width:0; text-align:center; font-size:11.5px; line-height:calc(var(--rh) - 1px); cursor:pointer; font-variant-numeric:tabular-nums; border-right:1px solid #eef1f5; scroll-margin:120px 24px 240px 24px; white-space:nowrap; overflow:hidden}
+.c:last-child{border-right:0}
+.c:hover{background:#eef4fd}
+.row.on .tc:not(.na):not(.none){background:#f4f8ff}
+.row.on .lab{color:var(--accent); font-weight:700}
+.c.hi{color:#c62828; font-weight:700}
+.c.hi2{background:var(--red-soft)}
+.c.bp{background:var(--red); color:#fff; font-weight:700}
+.c.bn{color:var(--muted)}
+.c.cur{background:var(--accent)!important; color:#fff!important; box-shadow:0 0 0 2px var(--accent); border-radius:2px; position:relative; z-index:2; overflow:visible}
+.c.flash{animation:flash .55s ease-out}
+@keyframes flash{from{background:#a9ecc6}to{background:transparent}}
+.tc.na{background:repeating-linear-gradient(135deg,#f3f4f7 0 4px,#e6e9ee 4px 5px)}
+.tc.na .c{cursor:default; color:transparent; pointer-events:none}
+.tc.none{background:#fafbfc}
+.cedit{width:100%; height:100%; border:0; padding:0; margin:0; text-align:center; font-size:11.5px; background:#fff; color:var(--ink); outline:2px solid var(--accent)}
+.row.num .tn{border-left:1px solid var(--line); border-top:1px solid var(--line); border-bottom:1px solid var(--line); text-align:center; font-weight:700; font-size:12.5px; line-height:calc(var(--rh) - 2px); background:#f1f4f8; cursor:pointer; user-select:none}
+.row.num .tn:hover{background:#e6ecf5}
+.tn.miss{color:#a2aab7; text-decoration:line-through; background:#e7eaef}
+.row.num .lab{font-weight:700; color:var(--ink); letter-spacing:.06em}
+.grow{display:grid; grid-template-columns:var(--lab) auto}
+.grow .lab{display:flex; align-items:center; justify-content:flex-end; line-height:1.2; font-weight:700; color:var(--ink); font-size:11px; text-transform:uppercase; letter-spacing:.05em}
+.grow svg{display:block}
+svg .root{fill:#f1ece1; stroke:#a2a9b5; stroke-width:.8}
+svg .crown{fill:#fdfcf8; stroke:#a2a9b5; stroke-width:.8}
+svg .gl{stroke:#26324a; stroke-opacity:.1; stroke-width:.6}
+svg .gl0{stroke-opacity:.24}
+svg .vsep{stroke:#e3e7ee; stroke-width:1}
+svg .edge{stroke:#b6bfcc; stroke-width:1}
+svg .miss{opacity:.2}
+svg .x{stroke:#8e97a5; stroke-width:1.2}
+svg .gm{fill:none; stroke:#d93838; stroke-width:1.7; stroke-linejoin:round}
+svg .pk{fill:none; stroke:#2563eb; stroke-width:1.7; stroke-linejoin:round}
+svg .pa{fill:#2563eb; fill-opacity:.16}
+svg .dg{fill:#d93838}
+svg .db{fill:#2563eb}
+
+.summary{display:flex; flex-wrap:wrap; gap:3px 18px; margin:8px 0 8px var(--lab); padding:6px 12px; background:#f3f5f9; border-radius:6px; font-size:12px; color:var(--muted); max-width:874px}
+.summary b{color:var(--ink)}
+.foot{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:20px; margin-top:12px; align-items:start; max-width:1006px}
+.notes textarea{margin-top:3px; border:1px solid var(--line2); border-radius:6px; padding:6px 8px; font-size:13px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--ink); resize:vertical; min-height:44px}
+.notes-print{font-size:12px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--ink); white-space:pre-wrap}
+.legend{font-size:11px; color:var(--muted); display:flex; flex-direction:column; gap:2px; max-width:440px}
+.legend i{display:inline-block; width:18px; height:0; border-top:2px solid; vertical-align:middle; margin-right:6px}
+
+/* Komut kutusu (sol alt) */
+.cmdbox{position:fixed; left:14px; bottom:14px; z-index:40; width:300px; background:#fff; border:1px solid #d3d9e3; border-radius:10px; box-shadow:0 6px 24px rgba(20,30,50,.16); font-size:12px}
+.cb-head{display:flex; justify-content:space-between; align-items:center; padding:7px 10px; border-bottom:1px solid var(--line2); font-weight:700; cursor:pointer; user-select:none}
+.cb-head span:last-child{color:var(--muted); font-weight:400}
+.cmdbox.min .cb-head{border-bottom:0}
+.cmdbox.min .cb-body{display:none}
+.cb-body{padding:6px 8px 8px}
+.cb-main{list-style:none; margin:0; padding:0}
+.cb-main li{display:flex; justify-content:space-between; gap:8px; padding:2px 6px; border-radius:5px}
+.cb-main li.on{background:var(--accent-soft); color:var(--accent); font-weight:600}
+.cb-main em{color:var(--muted); font-style:normal; white-space:nowrap}
+.cb-extra{margin-top:6px; padding:6px 4px 0; border-top:1px solid var(--line2); color:var(--muted); line-height:1.5}
+.cb-extra p{margin:0 0 3px}
+.cb-extra b{color:var(--ink); font-weight:600; white-space:nowrap}
+.cb-kbd{margin-top:4px; color:var(--muted); font-size:11px; line-height:1.45}
+#typeIn{width:100%; margin-top:7px; border:1px solid var(--line); border-radius:6px; padding:5px 8px; font-size:12px}
+
+.print-only{display:none}
+@page{size:A4 landscape; margin:6mm}
+@media print{
+  *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{background:#fff}
+  .no-print{display:none!important}
+  .print-only{display:block}
+  .wrap{padding:0; overflow:visible}
+  .sheet{box-shadow:none; border-radius:0; padding:0; margin:0; width:1006px}
+  .head{margin-bottom:6px; padding-bottom:6px}
+  .c{font-size:13px; font-weight:600}
+  .lab{font-size:11.5px; color:#3d4656}
+  .summary{margin:4px 0 4px var(--lab); padding:4px 10px}
+  .foot{margin-top:6px}
+  .notes.empty{visibility:hidden}
+  .c.cur{background:transparent!important; color:inherit!important; box-shadow:none!important}
+  .c.bp{background:var(--red)!important; color:#fff!important}
+  .row.on .tc:not(.na):not(.none){background:transparent}
+  .row.on .lab{color:var(--muted); font-weight:400}
+  .notes textarea{display:none}
+  .fields input{border-bottom-color:#9aa3b0}
+  input[type=date]::-webkit-calendar-picker-indicator{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="appbar no-print">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3C4.5 3 3 5 3 7.5c0 3 1.5 4.5 2 7 .5 3 1 6.5 2.5 6.5S9.5 17 10 15c.4-1.5 1-2 2-2s1.6.5 2 2c.5 2 1 6 2.5 6s2-3.5 2.5-6.5c.5-2.5 2-4 2-7C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"/></svg>
+    <div class="brand-text">Periodontal Chart-Voice<small>Created by Yakup Kaan Kalaycı, DDS, PhD</small><small class="brand-contact">Burdur Mehmet Akif Ersoy Üniversitesi, Diş Hekimliği Fakültesi, Periodontoloji Anabilim Dalı</small><small class="brand-contact">ORCID ID: <a href="https://orcid.org/0000-0001-8439-0808" target="_blank" rel="noopener">0000-0001-8439-0808</a> · E-mail: <a href="mailto:ykalayci@mehmetakif.edu.tr">ykalayci@mehmetakif.edu.tr</a></small></div>
+  </div>
+  <div class="actions">
+    <button class="btn mic" id="btnMic" title="Sesli girişi aç / kapat">
+      <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      <span id="micLbl">Mikrofonu aç</span>
+    </button>
+    <button class="btn" id="btnPrint" title="Yazıcıdan çıktı al (PDF olarak da kaydedebilirsiniz)">
+      <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2"/><rect x="6" y="14" width="12" height="7"/></svg>
+      Yazdır
+    </button>
+    <button class="btn" id="btnSave" title="Chart'ı bilgisayara kaydet (.html — çift tıklayınca dolu haliyle açılır)">
+      <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3h11l3 3v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/></svg>
+      Kaydet
+    </button>
+    <button class="btn ghost" id="btnOpen" title="Daha önce kaydedilmiş bir chart'ı aç">Aç</button>
+    <button class="btn ghost" id="btnNew" title="Boş chart ile yeni hasta">Yeni hasta</button>
+    <button class="btn ghost" id="btnSettings">Ayarlar</button>
+    <button class="btn ghost" id="btnAbout">Hakkında</button>
+  </div>
+</header>
+
+<dialog class="about no-print" id="about">
+  <h2>Periodontal Chart-Voice</h2>
+  <p class="about-sub">Created by Yakup Kaan Kalaycı, DDS, PhD · Sürüm 1.0</p>
+  <h3>Veri gizliliği</h3>
+  <p>Chart verileri hiçbir sunucuya gönderilmez; yalnızca bu tarayıcıda ve sizin kaydettiğiniz dosyalarda tutulur. Sesli giriş açıkken konuşmanız, yazıya çevrilmesi için tarayıcının konuşma tanıma servisine (Chrome'da Google, Edge'de Microsoft) gönderilir. Hasta adı gibi kimlik bilgilerini sesle söylemeyin.</p>
+  <h3>Sorumluluk reddi</h3>
+  <p>Bu yazılım bir dokümantasyon aracıdır; teşhis koymaz, tedavi önermez ve tıbbi cihaz olarak onaylanmamıştır. Girilen değerlerin doğruluğundan kullanan hekim sorumludur.</p>
+  <h3>Lisans</h3>
+  <p>© 2026 Yakup Kaan Kalaycı · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.tr" target="_blank" rel="noopener license">CC BY-NC-SA 4.0</a>. Kaynak gösterilerek, ticari olmayan amaçlarla ve değiştirilmiş sürümler aynı lisansla paylaşılmak şartıyla kullanılabilir.</p>
+  <p style="margin-top:6px"><b>Klinik kullanım serbesttir:</b> Hekimler ve çalıştıkları klinik, hastane ve kurumlar (özel muayenehaneler dahil) yazılımı hasta bakımı, klinik kayıt, eğitim ve araştırma için ücretsiz kullanabilir. Yazılımın satılması veya ücretli bir ürünün parçası yapılması yazarın iznine bağlıdır. Yazılım “olduğu gibi” sunulur; hiçbir garanti verilmez.</p>
+  <form method="dialog"><button class="btn">Kapat</button></form>
+</dialog>
+
+<div class="settings no-print" id="settings" hidden>
+  <label><input type="checkbox" id="setTwo"> 10–15 arası sayıları tek değer say (cep derinliği, klinik ataçman kaybı)</label>
+  <label><input type="checkbox" id="setBeep"> Onay bip sesleri</label>
+  <p class="hint">Yazma sırası: 18→11, 21→28, 38→31, 41→48. Her dişte önce bukkal, sonra palatinal / lingual; 18–11 ve 38–31 disto → mesio, 21–28 ve 41–48 mesio → disto.</p>
+</div>
+
+<div class="status no-print" id="status">
+  <div class="st-state"><span class="dot" id="micDot"></span><span class="pill" id="stState">Mikrofon kapalı</span></div>
+  <div class="st-mode"><span id="stMode">Ölçüm seçilmedi</span><span id="stPos"></span></div>
+  <div class="st-heard">Duyulan: <span id="stHeard">—</span><span id="stInterim"></span></div>
+  <div class="st-msg" id="stMsg"></div>
+</div>
+
+<main class="wrap">
+  <div class="banner no-print" id="draftBanner" hidden>
+    <span>Önceki oturumdan kaydedilmemiş bir chart bulundu <b id="draftInfo"></b>.</span>
+    <span style="display:flex; gap:8px">
+      <button class="btn" id="draftRestore">Geri yükle</button>
+      <button class="btn" id="draftDiscard">Yok say</button>
+    </span>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="head">
+      <h1>PERİODONTAL CHART</h1>
+      <div class="fields">
+        <label>Hasta adı soyadı <input id="fName" autocomplete="off"></label>
+        <label>Dosya no <input id="fId" autocomplete="off"></label>
+        <label>Muayene tarihi <input id="fDate" type="date"></label>
+        <label>Doğum tarihi <input id="fBirth" type="date"></label>
+        <label>Hekim <input id="fClin" autocomplete="off"></label>
+      </div>
+    </div>
+
+    <section class="jaw" id="jawU"></section>
+    <div class="summary" id="summary"></div>
+    <section class="jaw" id="jawL"></section>
+
+    <div class="foot">
+      <label class="notes">Notlar
+        <textarea id="fNotes" rows="2"></textarea>
+        <div class="notes-print print-only" id="notesPrint"></div>
+      </label>
+      <div class="legend">
+        <span><i style="color:#d93838"></i>Gingival marjin &nbsp; <i style="color:#2563eb"></i>Cep tabanı (sondlama derinliği)</span>
+        <span>Gingival marjin mine-sement sınırına göre: koronalde +, apikalde (resesyon) −.</span>
+        <span>Sondlamada kanama diş başına; plak indeksi 0–3; gingival indeks 0–4; furkasyon 1–4.</span>
+        <span class="print-only">Periodontal Chart-Voice · © 2026 Yakup Kaan Kalaycı, DDS, PhD · CC BY-NC-SA 4.0</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<aside class="cmdbox no-print" id="cmdbox">
+  <div class="cb-head" id="cbHead"><span>Sesli komutlar</span><span id="cbArrow">gizle ▾</span></div>
+  <div class="cb-body">
+    <ol class="cb-main">
+      <li data-m="start">“Chart'ı başlat”</li>
+      <li data-m="bop">“Sondlamada kanamayı yaz” <em>pozitif / negatif</em></li>
+      <li data-m="pd">“Cep derinliğini yaz” <em>mm</em></li>
+      <li data-m="cal">“Klinik ataçman kaybı seviyesini yaz” <em>mm</em></li>
+      <li data-m="gm">“Gingival marjini yaz” <em>mm</em></li>
+      <li data-m="pi">“Plak indexi yaz” <em>0–3</em></li>
+      <li data-m="gi">“Gingival indexi yaz” <em>0–4</em></li>
+      <li data-m="fu">“Furkasyon yaz” <em>1–4</em></li>
+    </ol>
+    <div class="cb-extra">
+      <p>Herhangi bir dişe geçmek istiyorsanız <b>“diş ...'ya geç”</b> deyin.</p>
+      <p>Eksik diş durumunda <b>“... nolu diş eksik”</b> deyin.</p>
+    </div>
+    <div class="cb-kbd">Klavye: hücreye tıkla ve rakam yaz · çift tık: serbest değer · tıkla diş no: eksik diş · Ctrl+Z: geri al</div>
+    <form id="typeForm" autocomplete="off"><input id="typeIn" placeholder="Komut veya değer yazıp Enter (ör. 3 2 3)"></form>
+  </div>
+</aside>
+
+<input type="file" id="fileIn" accept=".html,.htm,.json" hidden>
+
+<script type="application/json" id="saved-data">null</script>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ---------- Dişler ve ölçümler ---------- */
+const UPPER = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const LOWER = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+// Dikte sırası (1→32): 18…11, 21…28, 38…31, 41…48
+const SEQ = [...UPPER, 38,37,36,35,34,33,32,31,41,42,43,44,45,46,47,48];
+// Furkasyon kutucuğu olan dişler (1,2,3,4,5,12,13,14,15,16,17,18,19,30,31,32)
+const FURC = new Set([18,17,16,15,14,24,25,26,27,28,38,37,36,46,47,48]);
+const SITE_M = ['pd','cal','gm','pi','gi'];
+const MD = {
+  bop: {name:'Sondlamada kanama'},
+  pd:  {name:'Cep derinliği',          min:0,   max:15},
+  cal: {name:'Klinik ataçman kaybı',   min:-9,  max:20},
+  gm:  {name:'Gingival marjin',        min:-15, max:15},
+  pi:  {name:'Plak indeksi',           min:0,   max:3},
+  gi:  {name:'Gingival indeks',        min:0,   max:4},
+  fu:  {name:'Furkasyon',              min:0,   max:4},
+};
+const LABEL = {fu:'Furkasyon', bop:'Sondlamada kanama', pi:'Plak indeksi', gi:'Gingival indeks', gm:'Gingival marjin', pd:'Cep derinliği', cal:'Klinik ataçman kaybı'};
+const SET_KEY = 'periochart.settings.v1', DRAFT_KEY = 'periochart.draft.v1', CB_KEY = 'periochart.cmdbox.v1';
+
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
+
+const settings = Object.assign({twoDigit:true, beep:true}, lsGet(SET_KEY) || {});
+
+function today(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function blankState(){
+  const d = {bop:{}, fu:{}};
+  for (const m of SITE_M) d[m] = {};
+  for (const t of SEQ){
+    for (const m of SITE_M) d[m][t] = {b:[null,null,null], l:[null,null,null]};
+    d.bop[t] = null;
+    if (FURC.has(t)) d.fu[t] = [null,null];
+  }
+  return {v:1, patient:{name:'', id:'', date:today(), birth:'', clin:'', notes:''}, d, missing:{}};
+}
+
+function normalizeState(src){
+  const st = blankState();
+  if (!src || typeof src !== 'object') return st;
+  for (const k of Object.keys(st.patient)) if (typeof src.patient?.[k] === 'string') st.patient[k] = src.patient[k];
+  const sd = src.d || {};
+  for (const t of SEQ){
+    for (const m of SITE_M) for (const s of ['b','l']) for (let i = 0; i < 3; i++){
+      const v = sd[m]?.[t]?.[s]?.[i];
+      if (typeof v === 'number') st.d[m][t][s][i] = v;
+    }
+    const b = sd.bop?.[t];
+    if (b === '+' || b === '-') st.d.bop[t] = b;
+    if (FURC.has(t)) for (let i = 0; i < 2; i++){ const v = sd.fu?.[t]?.[i]; if (typeof v === 'number') st.d.fu[t][i] = v; }
+    if (src.missing?.[t]) st.missing[t] = true;
+  }
+  return st;
+}
+
+function hasData(st){
+  if (!st || !st.d) return false;
+  if (st.patient?.name) return true;
+  if (Object.keys(st.missing || {}).length) return true;
+  for (const m of [...SITE_M, 'bop', 'fu']){
+    for (const v of Object.values(st.d[m] || {})){
+      if (v == null) continue;
+      if (typeof v !== 'object') return true;
+      const arr = Array.isArray(v) ? v : [...(v.b || []), ...(v.l || [])];
+      if (arr.some(x => x != null)) return true;
+    }
+  }
+  return false;
+}
+
+let S = blankState();
+const RT = {wantMic:false, listening:false, active:false, paused:false, mode:null, cur:null, curByMode:{}, hist:[], sign:1, errStreak:0, entered:[]};
+
+/* ---------- Bölge sırası ---------- */
+const quad = t => Math.floor(t / 10);
+// Alt çenede (38→31, 41→48) dikte ekranda sağdan sola ilerler:
+// 18–11 ve 38–31 distalden meziale, 21–28 ve 41–48 mezialden distale
+function rev(t){ return quad(t) >= 3; }
+function slotsFor(m, t){
+  if (!m || S.missing[t]) return [];
+  if (m === 'bop') return [{m, t, s:'x', i:0}];
+  if (m === 'fu') return FURC.has(t) ? [0,1].map(k => ({m, t, s:'x', i: rev(t) ? 1-k : k})) : [];
+  const r = rev(t), out = [];
+  for (let k = 0; k < 6; k++){ const j = k % 3; out.push({m, t, s: k < 3 ? 'b' : 'l', i: r ? 2-j : j}); }
+  return out;
+}
+const seq = m => SEQ.flatMap(t => slotsFor(m, t));
+const same = (a, b) => !!a && !!b && a.m === b.m && a.t === b.t && a.s === b.s && a.i === b.i;
+const keyOf = r => `${r.m}|${r.t}|${r.s}|${r.i}`;
+const refFromKey = k => { const [m,t,s,i] = k.split('|'); return {m, t:+t, s, i:+i}; };
+
+function getVal(r){
+  const d = S.d;
+  if (r.m === 'bop') return d.bop[r.t];
+  if (r.m === 'fu') return d.fu[r.t][r.i];
+  return d[r.m][r.t][r.s][r.i];
+}
+function setRaw(r, v){
+  const d = S.d;
+  if (r.m === 'bop') d.bop[r.t] = v;
+  else if (r.m === 'fu') d.fu[r.t][r.i] = v;
+  else d[r.m][r.t][r.s][r.i] = v;
+}
+
+function siteName(r){
+  if (r.m === 'bop') return '';
+  if (r.m === 'fu') return `${(rev(r.t) ? 1 - r.i : r.i) + 1}. kutucuk`;
+  const side = r.s === 'b' ? 'bukkal' : (quad(r.t) <= 2 ? 'palatinal' : 'lingual');
+  const leftIsDistal = quad(r.t) === 1 || quad(r.t) === 4;
+  const pos = r.i === 1 ? 'mid' : ((r.i === 0) === leftIsDistal ? 'disto' : 'mesio');
+  return `${pos}-${side}`;
+}
+
+/* ---------- Çizim ---------- */
+const TW = 54, MID = 10, GH = 84, PX = 4, GW = 16 * TW + MID;
+const colX = c => c * TW + (c >= 8 ? MID : 0);
+const cellEls = new Map();
+
+function rowsFor(jaw){
+  return jaw === 'U'
+    ? [['num'],['fu','x'],['bop','x'],['pi','b'],['gi','b'],['gm','b'],['pd','b'],['cal','b'],['graph','b',-1],['graph','l',1],['gm','l'],['pd','l'],['cal','l'],['gi','l'],['pi','l']]
+    : [['pi','l'],['gi','l'],['gm','l'],['pd','l'],['cal','l'],['graph','l',-1],['graph','b',1],['gm','b'],['pd','b'],['cal','b'],['gi','b'],['pi','b'],['bop','x'],['fu','x'],['num']];
+}
+
+function renderJaw(jaw){
+  const teeth = jaw === 'U' ? UPPER : LOWER;
+  let h = '';
+  for (const [m, s, dir] of rowsFor(jaw)){
+    if (m === 'num'){
+      h += `<div class="row num"><div class="lab">${jaw === 'U' ? 'ÜST ÇENE' : 'ALT ÇENE'}</div>`;
+      teeth.forEach((t, c) => {
+        if (c === 8) h += '<div></div>';
+        h += `<div class="tn${S.missing[t] ? ' miss' : ''}${c === 7 || c === 15 ? ' end' : ''}" data-t="${t}" title="Tıkla: eksik diş olarak işaretle / geri al">${t}</div>`;
+      });
+      h += '</div>';
+      continue;
+    }
+    if (m === 'graph'){
+      const name = s === 'b' ? 'Bukkal' : (jaw === 'U' ? 'Palatinal' : 'Lingual');
+      h += `<div class="grow"><div class="lab">${name}</div><svg id="g${jaw}${s}" data-dir="${dir}" width="${GW}" height="${GH}" viewBox="0 0 ${GW} ${GH}"></svg></div>`;
+      continue;
+    }
+    h += `<div class="row" data-m="${m}"><div class="lab">${LABEL[m]}</div>`;
+    teeth.forEach((t, c) => {
+      if (c === 8) h += '<div></div>';
+      const cls = (S.missing[t] ? ' na' : '') + (c === 7 || c === 15 ? ' end' : '');
+      const n = m === 'bop' ? 1 : m === 'fu' ? (FURC.has(t) ? 2 : 0) : 3;
+      if (!n){ h += `<div class="tc none${cls}"></div>`; return; }
+      h += `<div class="tc${cls}">`;
+      for (let i = 0; i < n; i++) h += `<div class="c" data-k="${m}|${t}|${s}|${i}"></div>`;
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+  $(jaw === 'U' ? '#jawU' : '#jawL').innerHTML = h;
+}
+
+function fmt(m, v){
+  if (v == null) return '';
+  if (m === 'bop') return v === '+' ? '+' : '−';
+  return v < 0 ? '−' + (-v) : String(v);
+}
+
+function renderCell(r){
+  const el = cellEls.get(keyOf(r));
+  if (!el) return;
+  const v = S.missing[r.t] ? null : getVal(r);
+  el.textContent = fmt(r.m, v);
+  el.className = 'c'
+    + (r.m === 'bop' && v === '+' ? ' bp' : '')
+    + (r.m === 'bop' && v === '-' ? ' bn' : '')
+    + (r.m === 'pd' && v >= 4 ? ' hi' : '')
+    + (r.m === 'pd' && v >= 6 ? ' hi2' : '')
+    + (el === curEl ? ' cur' : '');
+}
+
+function toothDims(t){
+  const n = t % 10, up = quad(t) <= 2;
+  if (n <= 2) return up ? {w: n === 1 ? 38 : 32, h:26, r:46, roots:1, k:'inc'} : {w: n === 1 ? 26 : 28, h:24, r:42, roots:1, k:'inc'};
+  if (n === 3) return {w: up ? 34 : 32, h:25, r:54, roots:1, k:'can'};
+  if (n <= 5) return {w: up ? 36 : 34, h:23, r:46, roots:1, k:'pre'};
+  return {w: n === 8 ? 42 : 48, h:22, r: n === 8 ? 36 : 42, roots: up ? 3 : 2, k:'mol'};
+}
+
+// v: mine-sement sınırından köke doğru (px). dir: -1 → kökler yukarıda
+function toothSVG(t, cx, cej, dir){
+  const D = toothDims(t), cw = D.w / 2, nw = cw * 0.74, h = D.h, r = D.r;
+  const P = (x, v) => `${(cx + x).toFixed(1)} ${(cej + dir * v).toFixed(1)}`;
+  let crown = `M${P(-nw,0)} C${P(-nw-1,-h*.2)} ${P(-cw,-h*.3)} ${P(-cw,-h*.55)} C${P(-cw,-h*.82)} ${P(-cw*.85,-h)} ${P(-cw*.55,-h)} `;
+  if (D.k === 'mol') crown += `Q${P(-cw*.28,-h*1.1)} ${P(0,-h*.97)} Q${P(cw*.28,-h*1.1)} ${P(cw*.55,-h)} `;
+  else if (D.k === 'pre') crown += `Q${P(0,-h*1.16)} ${P(cw*.55,-h)} `;
+  else if (D.k === 'can') crown += `L${P(0,-h*1.12)} L${P(cw*.55,-h)} `;
+  else crown += `L${P(cw*.55,-h)} `;
+  crown += `C${P(cw*.85,-h)} ${P(cw,-h*.82)} ${P(cw,-h*.55)} C${P(cw,-h*.3)} ${P(nw+1,-h*.2)} ${P(nw,0)} Z`;
+  const root = D.roots === 3
+    ? `M${P(-nw,0)} C${P(-nw,r*.5)} ${P(-nw*.98,r*.86)} ${P(-nw*.72,r*.9)} C${P(-nw*.5,r*.93)} ${P(-nw*.46,r*.6)} ${P(-nw*.34,r*.36)} C${P(-nw*.24,r*.62)} ${P(-nw*.2,r*.97)} ${P(0,r)} C${P(nw*.2,r*.97)} ${P(nw*.24,r*.62)} ${P(nw*.34,r*.36)} C${P(nw*.46,r*.6)} ${P(nw*.5,r*.93)} ${P(nw*.72,r*.9)} C${P(nw*.98,r*.86)} ${P(nw,r*.5)} ${P(nw,0)} Z`
+    : D.roots === 2
+    ? `M${P(-nw,0)} C${P(-nw,r*.5)} ${P(-nw*.95,r*.92)} ${P(-nw*.6,r)} C${P(-nw*.3,r*.96)} ${P(-nw*.18,r*.55)} ${P(0,r*.34)} C${P(nw*.18,r*.55)} ${P(nw*.3,r*.96)} ${P(nw*.6,r)} C${P(nw*.95,r*.92)} ${P(nw,r*.5)} ${P(nw,0)} Z`
+    : `M${P(-nw,0)} C${P(-nw,r*.5)} ${P(-nw*.35,r*.97)} ${P(0,r)} C${P(nw*.35,r*.97)} ${P(nw,r*.5)} ${P(nw,0)} Z`;
+  return `<path class="root" d="${root}"/><path class="crown" d="${crown}"/>`;
+}
+
+function drawGraph(jaw, side){
+  const svg = document.getElementById(`g${jaw}${side}`);
+  if (!svg) return;
+  const dir = +svg.dataset.dir;
+  const cej = dir < 0 ? 56 : GH - 56;
+  const Y = mm => Math.max(1, Math.min(GH - 1, cej + dir * mm * PX)).toFixed(1);
+  const teeth = jaw === 'U' ? UPPER : LOWER;
+  let h = '';
+  teeth.forEach((t, c) => { h += `<g${S.missing[t] ? ' class="miss"' : ''}>${toothSVG(t, colX(c) + TW / 2, cej, dir)}</g>`; });
+  for (let mm = -6; mm <= 14; mm++){
+    const y = cej + dir * mm * PX;
+    if (y < 0 || y > GH) continue;
+    h += `<line class="gl${mm === 0 ? ' gl0' : ''}" x1="0" x2="${GW}" y1="${y}" y2="${y}"/>`;
+  }
+  for (let c = 1; c < 16; c++) if (c !== 8) h += `<line class="vsep" x1="${colX(c)}" x2="${colX(c)}" y1="0" y2="${GH}"/>`;
+  h += `<line class="edge" x1="0.5" x2="0.5" y1="0" y2="${GH}"/><line class="edge" x1="${8*TW-0.5}" x2="${8*TW-0.5}" y1="0" y2="${GH}"/>`;
+  h += `<line class="edge" x1="${8*TW+MID+0.5}" x2="${8*TW+MID+0.5}" y1="0" y2="${GH}"/><line class="edge" x1="${GW-0.5}" x2="${GW-0.5}" y1="0" y2="${GH}"/>`;
+  teeth.forEach((t, c) => {
+    if (S.missing[t]){
+      const x0 = colX(c) + 9, x1 = colX(c) + TW - 9;
+      h += `<path class="x" d="M${x0} 10 L${x1} ${GH-10} M${x1} 10 L${x0} ${GH-10}"/>`;
+      return;
+    }
+    const gmA = S.d.gm[t][side], pdA = S.d.pd[t][side], calA = S.d.cal[t][side];
+    const gP = [], mP = [], bP = [];
+    for (let i = 0; i < 3; i++){
+      const x = (colX(c) + TW * (2 * i + 1) / 6).toFixed(1);
+      const g = gmA[i], p = pdA[i], a = calA[i];
+      if (g != null) gP.push(`${x},${Y(-g)}`);
+      if (p != null) mP.push(`${x},${Y(-(g || 0))}`);
+      const bottom = p != null ? -(g || 0) + p : (a != null ? a : null);
+      if (bottom != null) bP.push(`${x},${Y(bottom)}`);
+    }
+    if (mP.length === 3 && bP.length === 3) h += `<polygon class="pa" points="${mP.join(' ')} ${bP.slice().reverse().join(' ')}"/>`;
+    if (gP.length > 1) h += `<polyline class="gm" points="${gP.join(' ')}"/>`;
+    else if (gP.length === 1){ const [x, y] = gP[0].split(','); h += `<circle class="dg" cx="${x}" cy="${y}" r="1.8"/>`; }
+    if (bP.length > 1) h += `<polyline class="pk" points="${bP.join(' ')}"/>`;
+    else if (bP.length === 1){ const [x, y] = bP[0].split(','); h += `<circle class="db" cx="${x}" cy="${y}" r="1.8"/>`; }
+  });
+  svg.innerHTML = h;
+}
+function drawGraphs(){ for (const j of ['U','L']) for (const s of ['b','l']) drawGraph(j, s); }
+
+function renderSummary(){
+  const vals = m => {
+    const out = [];
+    for (const t of SEQ){ if (S.missing[t]) continue; for (const s of ['b','l']) for (const v of S.d[m][t][s]) if (v != null) out.push(v); }
+    return out;
+  };
+  const avg = a => a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1).replace('.', ',') : '–';
+  const pd = vals('pd'), cal = vals('cal'), pi = vals('pi'), gi = vals('gi');
+  let bp = 0, bn = 0;
+  for (const t of SEQ){ if (S.missing[t]) continue; if (S.d.bop[t] === '+') bp++; else if (S.d.bop[t] === '-') bn++; }
+  const miss = SEQ.filter(t => S.missing[t]);
+  $('#summary').innerHTML =
+    `<span>Ort. cep derinliği: <b>${avg(pd)}${pd.length ? ' mm' : ''}</b></span>` +
+    `<span>Ort. klinik ataçman kaybı: <b>${avg(cal)}${cal.length ? ' mm' : ''}</b></span>` +
+    `<span>Sondlamada kanama: <b>${bp + bn ? Math.round(100 * bp / (bp + bn)) + '%' : '–'}</b>${bp + bn ? ` (${bp}/${bp + bn} diş)` : ''}</span>` +
+    `<span>Ort. plak ind.: <b>${avg(pi)}</b></span>` +
+    `<span>Ort. gingival ind.: <b>${avg(gi)}</b></span>` +
+    `<span>Cep >3 mm: <b>${pd.filter(v => v > 3).length}</b> bölge</span>` +
+    (miss.length ? `<span>Eksik dişler: <b>${miss.join(', ')}</b></span>` : '');
+}
+
+let curEl = null;
+function paintCursor(){
+  if (curEl) curEl.classList.remove('cur');
+  curEl = RT.cur ? cellEls.get(keyOf(RT.cur)) : null;
+  if (curEl){
+    curEl.classList.add('cur');
+    curEl.scrollIntoView({block:'nearest', inline:'nearest'});
+  }
+}
+
+function rebuild(){
+  renderJaw('U'); renderJaw('L');
+  cellEls.clear();
+  for (const el of $$('.c[data-k]')) cellEls.set(el.dataset.k, el);
+  for (const k of cellEls.keys()) renderCell(refFromKey(k));
+  curEl = null;
+}
+
+function afterChange(){
+  drawGraphs();
+  renderSummary();
+  paintCursor();
+  refreshStatus();
+}
+
+/* ---------- Durum ve mesajlar ---------- */
+function msg(text, kind){
+  const el = $('#stMsg');
+  el.textContent = text || '';
+  el.className = 'st-msg' + (kind ? ' ' + kind : '');
+}
+const info = t => msg(t, '');
+const okMsg = t => msg(t, 'ok');
+const warn = t => { msg(t, 'err'); beep('err'); };
+
+function refreshStatus(){
+  $('#micDot').className = 'dot' + (RT.listening ? ' on' : '');
+  $('#btnMic').classList.toggle('on', RT.wantMic);
+  $('#micLbl').textContent = RT.wantMic ? 'Mikrofonu kapat' : 'Mikrofonu aç';
+  let st = 'Mikrofon kapalı', cls = '';
+  if (RT.wantMic){
+    if (!RT.active){ st = 'Dinliyor · Pasif'; cls = 'idle'; }
+    else if (RT.paused){ st = 'Dinliyor · Duraklatıldı'; cls = 'pause'; }
+    else { st = 'Dinliyor · Aktif'; cls = 'act'; }
+  }
+  const pill = $('#stState');
+  pill.textContent = st;
+  pill.className = 'pill ' + cls;
+  $('#stMode').textContent = RT.mode ? MD[RT.mode].name : 'Ölçüm seçilmedi';
+  const sn = RT.cur ? siteName(RT.cur) : '';
+  $('#stPos').textContent = RT.mode ? (RT.cur ? `Diş ${RT.cur.t}${sn ? ' · ' + sn : ''}` : 'Tamamlandı ✓') : '';
+  for (const li of $$('.cb-main li[data-m]')) li.classList.toggle('on', li.dataset.m === RT.mode);
+  for (const r of $$('.row[data-m]')) r.classList.toggle('on', r.dataset.m === RT.mode);
+}
+
+/* ---------- Ses efektleri ---------- */
+let actx = null;
+function primeAudio(){
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+  } catch (e) {}
+}
+function tone(freq, start, dur, vol, type){
+  const o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime + start;
+  o.type = type || 'sine';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.02);
+}
+function beep(kind){
+  if (!settings.beep || !actx) return;
+  try {
+    if (kind === 'ok') tone(1250, 0, 0.05, 0.035);
+    else if (kind === 'mode'){ tone(660, 0, 0.1, 0.07); tone(880, 0.1, 0.12, 0.07); }
+    else if (kind === 'start'){ tone(523, 0, 0.1, 0.07); tone(659, 0.1, 0.1, 0.07); tone(784, 0.2, 0.16, 0.07); }
+    else if (kind === 'done'){ tone(880, 0, 0.12, 0.07); tone(660, 0.12, 0.18, 0.07); }
+    else if (kind === 'err') tone(196, 0, 0.22, 0.06, 'square');
+  } catch (e) {}
+}
+
+/* ---------- Veri girişi ---------- */
+function flash(r){
+  const el = cellEls.get(keyOf(r));
+  if (!el) return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 600);
+}
+
+function setValue(r, v){
+  RT.hist.push({k:'val', r, prev:getVal(r), mode:RT.mode});
+  if (RT.hist.length > 1000) RT.hist.shift();
+  setRaw(r, v);
+  renderCell(r);
+  flash(r);
+  dirty();
+}
+
+function firstSlotAfter(m, t, d){
+  for (let j = SEQ.indexOf(t) + d; j >= 0 && j < SEQ.length; j += d){
+    const sl = slotsFor(m, SEQ[j]);
+    if (sl.length) return sl[0];
+  }
+  return null;
+}
+
+function advance(){
+  const list = seq(RT.mode);
+  const i = list.findIndex(r => same(r, RT.cur));
+  RT.cur = i >= 0 ? (list[i + 1] || null) : (RT.cur ? firstSlotAfter(RT.mode, RT.cur.t, 1) : null);
+  RT.curByMode[RT.mode] = RT.cur;
+  if (!RT.cur){ beep('done'); okMsg(`${MD[RT.mode].name} tamamlandı. Başka bir dişe dönmek için “diş 36” gibi söyleyin.`); }
+}
+
+function step(d){
+  if (!RT.mode || !RT.cur) return;
+  const list = seq(RT.mode);
+  const i = list.findIndex(r => same(r, RT.cur));
+  if (list[i + d]) RT.cur = list[i + d];
+  RT.curByMode[RT.mode] = RT.cur;
+}
+
+function enter(v){
+  const r = RT.cur;
+  if (!r){ warn(`${MD[RT.mode].name} tamamlandı — yeni değer için önce “diş 36” gibi bir dişe gidin.`); return false; }
+  if (r.m !== 'bop'){
+    const d = MD[r.m];
+    if (!Number.isInteger(v) || v < d.min || v > d.max){
+      warn(`Geçersiz değer: ${fmt(r.m, v)} (${d.name}: ${fmt(r.m, d.min)}…${d.max}). Bu cümlenin kalanı yazılmadı.`);
+      return false;
+    }
+  }
+  setValue(r, v);
+  RT.entered.push(fmt(r.m, v));
+  beep('ok');
+  advance();
+  return true;
+}
+
+function setMode(m){
+  if (RT.mode === m && RT.cur){ beep('mode'); info(`${MD[m].name} — Diş ${RT.cur.t}`); return; }
+  RT.mode = m;
+  RT.sign = 1;
+  let c = RT.curByMode[m];
+  if (c && S.missing[c.t]) c = null;
+  if (!c){
+    const list = seq(m);
+    c = list.find(r => getVal(r) == null) || list[0] || null;
+  }
+  RT.cur = c;
+  RT.curByMode[m] = c;
+  beep('mode');
+  info(c ? `${MD[m].name} — Diş ${c.t}${siteName(c) ? ' · ' + siteName(c) : ''} ile başlıyor.` : `${MD[m].name} için uygun diş yok.`);
+}
+
+function needMode(){ warn('Önce bir ölçüm komutu söyleyin (ör. “Cep derinliğini yaz”).'); }
+
+function gotoTooth(t){
+  if (!RT.mode) return needMode();
+  if (!SEQ.includes(t)) return warn(`Geçersiz diş numarası: ${t}`);
+  if (S.missing[t]) return warn(`Diş ${t} eksik olarak işaretli. Geri almak için chart'ta diş numarasına tıklayın.`);
+  const sl = slotsFor(RT.mode, t);
+  if (!sl.length) return warn(`Diş ${t} için ${MD[RT.mode].name.toLowerCase()} kutucuğu yok.`);
+  RT.cur = sl[0];
+  RT.curByMode[RT.mode] = RT.cur;
+  beep('mode');
+  info(`${MD[RT.mode].name} — Diş ${t}${siteName(sl[0]) ? ' · ' + siteName(sl[0]) : ''}`);
+}
+
+function jumpTooth(d){
+  if (!RT.mode) return needMode();
+  if (!RT.cur) return warn('Önce bir dişe gidin (ör. “diş 36”).');
+  const n = firstSlotAfter(RT.mode, RT.cur.t, d);
+  if (!n) return warn(d > 0 ? 'Sonraki diş yok.' : 'Önceki diş yok.');
+  RT.cur = n;
+  RT.curByMode[RT.mode] = n;
+  beep('mode');
+}
+
+function skip(){
+  if (!RT.mode) return needMode();
+  if (!RT.cur) return warn('Atlanacak kutucuk kalmadı.');
+  advance();
+}
+
+// onlyMark: sesli "… nolu diş eksik" yalnızca işaretler, işareti kaldırmaz
+function toggleMissing(t, onlyMark){
+  if (!SEQ.includes(t)){ warn(`Geçersiz diş numarası: ${t}`); return; }
+  const was = !!S.missing[t];
+  if (was && onlyMark){ info(`Diş ${t} zaten eksik olarak işaretli.`); return; }
+  RT.hist.push({k:'miss', t, prev:was, cur:RT.cur, mode:RT.mode});
+  if (was) delete S.missing[t]; else S.missing[t] = true;
+  if (!was){
+    for (const m of Object.keys(RT.curByMode)) if (RT.curByMode[m]?.t === t) RT.curByMode[m] = firstSlotAfter(m, t, 1);
+    if (RT.cur?.t === t) RT.cur = firstSlotAfter(RT.mode, t, 1);
+  }
+  rebuild();
+  dirty();
+  info(was ? `Diş ${t} tekrar eklendi.` : `Diş ${t} eksik olarak işaretlendi.`);
+}
+
+function undo(){
+  const h = RT.hist.pop();
+  if (!h){ warn('Geri alınacak bir işlem yok.'); return; }
+  if (h.k === 'val'){
+    setRaw(h.r, h.prev);
+    RT.mode = h.r.m;
+    RT.cur = h.r;
+    RT.curByMode[h.r.m] = h.r;
+    renderCell(h.r);
+  } else {
+    if (h.prev) S.missing[h.t] = true; else delete S.missing[h.t];
+    RT.mode = h.mode;
+    RT.cur = h.cur;
+    if (h.mode) RT.curByMode[h.mode] = h.cur;
+    rebuild();
+  }
+  dirty();
+  beep('mode');
+  info('Geri alındı.');
+}
+
+function activate(announce){
+  const wasPaused = RT.active && RT.paused, was = RT.active && !RT.paused;
+  RT.active = true;
+  RT.paused = false;
+  if (announce){
+    beep('start');
+    if (wasPaused) info(RT.mode ? `Devam — ${MD[RT.mode].name}${RT.cur ? ', Diş ' + RT.cur.t : ''}.` : 'Devam — bir ölçüm komutu söyleyin.');
+    else info(was ? 'Chart zaten aktif.' : 'Chart başladı — bir ölçüm komutu söyleyin.');
+  }
+}
+function pause(){
+  RT.paused = true;
+  beep('mode');
+  info('Duraklatıldı. Devam etmek için “devam” deyin.');
+}
+
+/* ---------- Konuşma çözümleme ---------- */
+const FOLD = {'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u','â':'a','î':'i','û':'u'};
+const fold = s => s.toLocaleLowerCase('tr-TR').replace(/̇/g, '').replace(/[çğıöşüâîû]/g, c => FOLD[c]);
+const NUMW = new Map(Object.entries({sifir:0, bir:1, bi:1, iki:2, uc:3, dort:4, dord:4, bes:5, alti:6, yedi:7, sekiz:8, dokuz:9}));
+const FILL = new Set(['yaz','yazalim','yazin','yazar','yaziyorum','ve','ile','tamam','mm','milimetre','milim','sondlama','sondlamada','sondalama','sonda',
+  'seviye','seviyesi','seviyesini','chart','cart','sart','kart','gingival','lutfen','simdi','ok','okey','peki','deger','degeri','degerleri',
+  'sonra','numara','numarali','nolu','no','dis','disi','dise','disin','bukkal','palatinal','lingual','mi','da','de','bu','su','olarak','evet','i']);
+
+const MODE_DEF = [
+  ['pi',  'plak\\w*(?:\\s+(?:indeks|index|endeks|indis)\\w*)?'],
+  ['gm',  '(?:(?:gingival|jinjival|cincival)\\w*\\s+)?(?:m[ae]rj\\w*|margin\\w*)'],
+  ['gi',  '(?:(?:gingival|jinjival|cincival)\\w*\\s+)?(?:indeks|index|endeks|indis)\\w*'],
+  ['cal', '(?:klinik\\s+)?(?:ata[cs]?h?\\s?man\\w*|attachment\\w*)(?:\\s+kayb\\w*)?(?:\\s+seviye\\w*)?'],
+  ['bop', '(?:sond\\w*\\s+)?(?:kanama\\w*|bleeding)'],
+  ['pd',  '(?:sond\\w*\\s+)?(?:cep\\w*(?:\\s+derinli\\w*)?|derinli\\w*)'],
+  ['fu',  'f[uy]?r[kc]a\\w*'],
+].map(([m, kw]) => ({
+  m,
+  full: new RegExp('(^|\\s)(?:' + kw + ')(?:\\s+\\S+){0,2}?\\s+ya[zs]\\w*(?=\\s|$)', 'g'),
+  alone: new RegExp('^\\s*(?:sond\\w*\\s+)?(?:' + kw + ')\\s*$'),
+  // "14 numaralı dişin ataçman seviyesi" / "ataçman seviyesi 14 numaralı diş"
+  toothFirst: new RegExp('§goto:(\\d{2})\\s+(?:' + kw + ')(?:\\s+ya[zs]\\w*)?(?=\\s|$)', 'g'),
+  toothLast: new RegExp('(^|\\s)(?:' + kw + ')\\s+§goto:(\\d{2})', 'g'),
+}));
+
+function normalizeText(text){
+  let s = fold(text);
+  s = s.replace(/(\d)['’`´]\s?[a-z]+/g, '$1');           // 36'ya → 36
+  s = s.replace(/[–—−]/g, '-');
+  s = s.replace(/(\d)-(?=\d)/g, '$1 ');                   // 3-2-3 → 3 2 3
+  s = s.replace(/[.,;:!?()"“”'’`´\/\\]/g, ' ');
+  s = s.replace(/-/g, ' - ').replace(/\+/g, ' + ');
+  s = s.replace(/(\d)([a-z])/g, '$1 $2').replace(/([a-z])(\d)/g, '$1 $2');
+  return ' ' + s.replace(/\s+/g, ' ').trim() + ' ';
+}
+
+function markCommands(s){
+  for (const md of MODE_DEF) if (md.alone.test(s)) return ` §m:${md.m} `;
+  const rep = (re, tok) => { s = s.replace(re, (...a) => ' ' + (typeof tok === 'function' ? tok(...a) : tok) + ' '); };
+  // "Chart'ı başlat" → "chart i baslat"
+  rep(/\s(?:chart|cart|sart|kart|cark)\w*(?:\s+i)?\s+baslat\w*/g, '§start');
+  rep(/\s(?:chart|cart|sart|kart|cark)\w*(?:\s+i)?\s+(?:bitir|kapat|durdur)\w*/g, '§pause');
+  rep(/\sgeri\s+al\w*|\s(?:sil|iptal)(?=\s)/g, '§undo');
+  rep(/\seksik\s+dis\w*(?:\s+(\d{2})(?=\s))?/g, (m, n) => n ? '§miss:' + n : '§miss');
+  rep(/\s(\d{2})\s+(?:numara\w*\s+|no\s*lu\s+|no\s+)?(?:dis\w*\s+)?eksik\w*(?=\s)/g, (m, n) => '§miss:' + n);
+  rep(/\sdis\w*\s+(?:eksik|yok)\w*(?=\s)/g, '§miss');
+  rep(/\s(?:sonraki|diger|siradaki)\s+dis\w*/g, '§nextt');
+  rep(/\sonceki\s+dis\w*/g, '§prevt');
+  // "diş 36'ya geç" → "dis 36 gec"
+  rep(/\sdis\w*\s+(\d{2})(?:\s+(?:e|a|ye|ya|numara\w*))?(?:\s+(?:git|gec)\w*)?(?=\s)/g, (m, n) => '§goto:' + n);
+  rep(/\s(\d{2})\s+(?:numara\w*\s+|no\s*lu\s+|no\s+)?dis\w*(?:\s+(?:git|gec)\w*)?(?=\s)/g, (m, n) => '§goto:' + n);
+  rep(/\s(\d{2})\s+(?:(?:e|a|ye|ya)\s+)?(?:git|gec)\w*(?=\s)/g, (m, n) => '§goto:' + n);
+  rep(/\s(?:git|gec)\w*\s+(\d{2})(?=\s)/g, (m, n) => '§goto:' + n);
+  // Diş numarasıyla birlikte söylenen ölçüm: önce ölçüme geç, sonra o dişe git
+  for (const md of MODE_DEF){
+    s = s.replace(md.toothFirst, (m, n) => ` §m:${md.m} §goto:${n} `);
+    s = s.replace(md.toothLast, (m, pre, n) => `${pre} §m:${md.m} §goto:${n} `);
+  }
+  for (const md of MODE_DEF) s = s.replace(md.full, `$1 §m:${md.m} `);
+  rep(/\s(?:dur|durdur|bekle|duraklat)(?=\s)/g, '§pause');
+  rep(/\sdevam\w*(?:\s+et\w*)?/g, '§resume');
+  rep(/\s(?:atla\w*|bos|bosluk)(?=\s)/g, '§skip');
+  return s;
+}
+
+function parse(text){
+  const toks = markCommands(normalizeText(text)).trim().split(/\s+/).filter(Boolean);
+  const acts = [];
+  let score = 0;
+  for (let i = 0; i < toks.length; i++){
+    const w = toks[i];
+    if (w[0] === '§'){ const [t, a] = w.slice(1).split(':'); acts.push({t, a}); score += 3; continue; }
+    if (/^\d+$/.test(w)){ acts.push({t:'num', raw:w}); score += w.length; continue; }
+    if (w === '-' || w === 'eksi' || w === 'minus'){ acts.push({t:'minus'}); score += 1; continue; }
+    if (w === '+' || w === 'arti' || w === 'plus'){ acts.push({t:'plus'}); score += 1; continue; }
+    if (/^(pozit|posit)/.test(w)){ acts.push({t:'pos'}); score += 2; continue; }
+    if (/^negat/.test(w)){ acts.push({t:'neg'}); score += 2; continue; }
+    if (w === 'on'){
+      const n = NUMW.get(toks[i + 1]);
+      if (n >= 1){ acts.push({t:'num', v:10 + n}); i++; } else acts.push({t:'num', v:10});
+      score += 1; continue;
+    }
+    if (NUMW.has(w)){ acts.push({t:'num', v:NUMW.get(w)}); score += 1; continue; }
+    if (FILL.has(w)) continue;
+    score -= 1.5;
+  }
+  return {acts, score};
+}
+
+function splitDigits(raw){
+  if (raw.length === 1) return [+raw];
+  if (raw.length === 2 && settings.twoDigit && (RT.mode === 'pd' || RT.mode === 'cal')){
+    const n = +raw;
+    if (n >= 10 && n <= 15) return [n];
+  }
+  return raw.split('').map(Number);
+}
+
+function run(acts, typed){
+  let halted = false, ignored = 0;
+  for (const a of acts){
+    if (a.t === 'start' || a.t === 'resume'){ activate(true); halted = false; continue; }
+    if (a.t === 'pause'){ pause(); continue; }
+    if (a.t === 'm'){ activate(false); setMode(a.a); halted = false; continue; }
+    if (!RT.active || RT.paused){
+      if (typed) activate(false); else { ignored++; continue; }
+    }
+    switch (a.t){
+      case 'undo': undo(); break;
+      case 'skip': if (!halted) skip(); break;
+      case 'miss':
+        if (a.a) toggleMissing(+a.a, true);
+        else if (RT.cur) toggleMissing(RT.cur.t, true);
+        else warn('Hangi diş? “eksik diş 36” gibi söyleyin.');
+        break;
+      case 'nextt': jumpTooth(1); halted = false; break;
+      case 'prevt': jumpTooth(-1); halted = false; break;
+      case 'goto': gotoTooth(+a.a); halted = false; break;
+      case 'num': {
+        if (halted) break;
+        if (!RT.mode){ needMode(); halted = true; break; }
+        if (RT.mode === 'bop'){ warn('Sondlamada kanama için “pozitif” ya da “negatif” söyleyin.'); halted = true; break; }
+        const vals = a.v != null ? [a.v] : splitDigits(a.raw);
+        for (const v0 of vals){
+          const v = v0 * RT.sign;
+          RT.sign = 1;
+          if (!enter(v === 0 ? 0 : v)){ halted = true; break; }
+        }
+        break;
+      }
+      case 'minus':
+        if (halted) break;
+        if (RT.mode === 'bop'){ if (!enter('-')) halted = true; } else RT.sign = -1;
+        break;
+      case 'neg':
+        if (halted) break;
+        if (RT.mode === 'bop'){ if (!enter('-')) halted = true; }
+        else if (RT.mode === 'gm' || RT.mode === 'cal') RT.sign = -1;
+        break;
+      case 'plus': case 'pos':
+        if (halted) break;
+        if (RT.mode === 'bop'){ if (!enter('+')) halted = true; }
+        break;
+    }
+  }
+  if (ignored) info(RT.paused ? 'Duraklatıldı — yazmaya devam etmek için “devam” deyin.' : 'Henüz başlamadı — “Chart\'ı başlat” deyin.');
+}
+
+function handleText(alts, typed){
+  alts = alts.map(a => (a || '').trim()).filter(Boolean);
+  if (!alts.length) return;
+  let best = null;
+  for (const text of alts){
+    const p = parse(text);
+    if (!best || p.score > best.score) best = {...p, text};
+  }
+  RT.entered = [];
+  run(best.acts, typed);
+  $('#stHeard').textContent = '«' + best.text + '»' + (RT.entered.length ? '  →  ' + RT.entered.join(' ') : '');
+  afterChange();
+}
+
+/* ---------- Mikrofon (Web Speech API) ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null;
+
+function micStart(){
+  if (!SR){ warn('Bu tarayıcı sesli girişi desteklemiyor. Lütfen Google Chrome veya Microsoft Edge kullanın.'); return; }
+  primeAudio();
+  RT.wantMic = true;
+  if (!rec){
+    rec = new SR();
+    rec.lang = 'tr-TR';
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.maxAlternatives = 3;
+    rec.onstart = () => { RT.listening = true; refreshStatus(); };
+    rec.onresult = onResult;
+    rec.onerror = onError;
+    rec.onend = onEnd;
+  }
+  try { rec.start(); } catch (e) {}
+  if (!RT.active) info('Dinliyor. Başlamak için “Chart\'ı başlat” deyin.');
+  refreshStatus();
+}
+
+function micStop(){
+  RT.wantMic = false;
+  try { if (rec) rec.stop(); } catch (e) {}
+  RT.listening = false;
+  $('#stInterim').textContent = '';
+  refreshStatus();
+}
+
+function onResult(e){
+  RT.errStreak = 0;
+  let interim = '';
+  for (let i = e.resultIndex; i < e.results.length; i++){
+    const res = e.results[i];
+    if (res.isFinal){
+      const alts = [];
+      for (let j = 0; j < res.length; j++) alts.push(res[j].transcript);
+      handleText(alts, false);
+    } else interim += res[0].transcript;
+  }
+  $('#stInterim').textContent = interim ? '  …' + interim : '';
+}
+
+function onError(e){
+  if (e.error === 'no-speech' || e.error === 'aborted') return;
+  if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+    RT.wantMic = false;
+    warn('Mikrofon izni verilmedi. Adres çubuğundaki mikrofon simgesinden izin verip tekrar deneyin.');
+  } else if (e.error === 'audio-capture'){
+    RT.wantMic = false;
+    warn('Mikrofon bulunamadı. Bağlantısını kontrol edin.');
+  } else if (e.error === 'network'){
+    RT.errStreak++;
+    warn('Konuşma tanıma servisine ulaşılamadı — internet bağlantısını kontrol edin. Tekrar deneniyor…');
+  } else if (e.error === 'language-not-supported'){
+    RT.wantMic = false;
+    warn('Türkçe konuşma tanıma bu tarayıcıda desteklenmiyor.');
+  }
+  refreshStatus();
+}
+
+function onEnd(){
+  RT.listening = false;
+  refreshStatus();
+  if (!RT.wantMic) return;
+  // Chrome dinlemeyi belirli aralıklarla kapatır; mikrofon açık kalsın diye yeniden başlat
+  const delay = Math.min(8000, 250 * Math.pow(2, RT.errStreak));
+  setTimeout(() => { if (RT.wantMic && !RT.listening){ try { rec.start(); } catch (e) {} } }, delay);
+}
+
+/* ---------- Kaydet / Aç / Yazdır ---------- */
+let saveTimer = null;
+function dirty(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => lsSet(DRAFT_KEY, {...S, _ts: Date.now()}), 300);
+  $('#draftBanner').hidden = true;
+}
+
+const PFIELDS = {fName:'name', fId:'id', fDate:'date', fBirth:'birth', fClin:'clin', fNotes:'notes'};
+function fillPatient(){ for (const [id, k] of Object.entries(PFIELDS)) $('#' + id).value = S.patient[k] || ''; }
+
+function fileName(){
+  const p = S.patient;
+  const nm = (p.name || 'hasta').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_');
+  return `Periodontal_Chart_${nm}_${p.date || today()}.html`;
+}
+
+function download(text, name, type){
+  const blob = new Blob([text], {type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+function saveFile(){
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector('#saved-data').textContent = JSON.stringify(S).replace(/</g, '\\u003c');
+  for (const id of ['jawU', 'jawL', 'summary']) clone.querySelector('#' + id).innerHTML = '';
+  clone.querySelector('#draftBanner').hidden = true;
+  clone.querySelector('#settings').hidden = true;
+  clone.querySelector('#sheet').removeAttribute('style');
+  clone.querySelector('#stMsg').textContent = '';
+  const name = fileName();
+  download('<!DOCTYPE html>\n' + clone.outerHTML, name, 'text/html;charset=utf-8');
+  okMsg(`Kaydedildi: ${name} (İndirilenler klasörü). Bu dosyayı açınca chart dolu haliyle gelir.`);
+}
+
+function resetRuntime(){
+  RT.mode = null; RT.cur = null; RT.curByMode = {}; RT.hist = []; RT.sign = 1;
+}
+
+function loadState(data){
+  S = normalizeState(data);
+  resetRuntime();
+  fillPatient();
+  rebuild();
+  afterChange();
+}
+
+function readEmbedded(){
+  try {
+    const d = JSON.parse($('#saved-data').textContent);
+    return d && d.d ? d : null;
+  } catch (e) { return null; }
+}
+
+async function openFile(f){
+  let data = null;
+  try {
+    const txt = await f.text();
+    if (/^\s*\{/.test(txt)) data = JSON.parse(txt);
+    else {
+      const m = txt.match(/<script[^>]*id=["']saved-data["'][^>]*>([\s\S]*?)<\/script>/i);
+      if (m) data = JSON.parse(m[1]);
+    }
+  } catch (e) { data = null; }
+  if (!data || !data.d){ warn('Bu dosyada kayıtlı bir chart bulunamadı.'); return; }
+  loadState(data);
+  dirty();
+  okMsg(`Açıldı: ${f.name}`);
+}
+
+function fitPrint(){
+  $('#notesPrint').textContent = S.patient.notes || '';
+  $('.notes').classList.toggle('empty', !S.patient.notes);
+  const sh = $('#sheet');
+  sh.style.zoom = '';
+  // A4 yatay, 6 mm kenar boşluğu ≈ 1077 × 748 css px; ekrandaki iç boşluklar baskıda kalkar
+  const cs = getComputedStyle(sh);
+  const w = sh.scrollWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const h = sh.scrollHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const z = Math.min(1, 1060 / w, 730 / h);
+  sh.style.zoom = z.toFixed(3);
+}
+
+/* ---------- Olaylar ---------- */
+function bindUI(){
+  $('#btnMic').addEventListener('click', () => RT.wantMic ? micStop() : micStart());
+  $('#btnPrint').addEventListener('click', () => window.print());
+  $('#btnSave').addEventListener('click', saveFile);
+  $('#btnOpen').addEventListener('click', () => $('#fileIn').click());
+  $('#fileIn').addEventListener('change', e => { const f = e.target.files[0]; if (f) openFile(f); e.target.value = ''; });
+  $('#btnNew').addEventListener('click', () => {
+    if (hasData(S) && !confirm('Mevcut chart temizlenecek. Kaydetmediyseniz bu veriler kaybolur. Devam edilsin mi?')) return;
+    loadState(null);
+    lsDel(DRAFT_KEY);
+    info('Yeni hasta için boş chart hazır.');
+  });
+  $('#btnSettings').addEventListener('click', () => { $('#settings').hidden = !$('#settings').hidden; });
+  $('#btnAbout').addEventListener('click', () => $('#about').showModal());
+
+  $('#setTwo').checked = settings.twoDigit;
+  $('#setBeep').checked = settings.beep;
+  $('#setTwo').addEventListener('change', e => { settings.twoDigit = e.target.checked; lsSet(SET_KEY, settings); });
+  $('#setBeep').addEventListener('change', e => { settings.beep = e.target.checked; lsSet(SET_KEY, settings); if (e.target.checked) primeAudio(); });
+
+  for (const [id, k] of Object.entries(PFIELDS)) $('#' + id).addEventListener('input', e => { S.patient[k] = e.target.value; dirty(); });
+
+  const cb = $('#cmdbox');
+  const setCb = min => { cb.classList.toggle('min', min); $('#cbArrow').textContent = min ? 'göster ▴' : 'gizle ▾'; };
+  setCb(!!lsGet(CB_KEY));
+  $('#cbHead').addEventListener('click', () => { const min = !cb.classList.contains('min'); setCb(min); lsSet(CB_KEY, min); });
+  $('#typeForm').addEventListener('submit', e => {
+    e.preventDefault();
+    primeAudio();
+    const v = $('#typeIn').value;
+    $('#typeIn').value = '';
+    handleText([v], true);
+  });
+
+  const sheet = $('#sheet');
+  sheet.addEventListener('click', e => {
+    const tn = e.target.closest('.tn');
+    if (tn){ toggleMissing(+tn.dataset.t); afterChange(); return; }
+    const c = e.target.closest('.c[data-k]');
+    if (!c || e.target.classList.contains('cedit')) return;
+    const r = refFromKey(c.dataset.k);
+    RT.mode = r.m; RT.cur = r; RT.curByMode[r.m] = r; RT.sign = 1;
+    paintCursor(); refreshStatus();
+  });
+  sheet.addEventListener('dblclick', e => {
+    const c = e.target.closest('.c[data-k]');
+    if (c && !e.target.classList.contains('cedit')) editCell(refFromKey(c.dataset.k));
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input,textarea,select,button,dialog')) return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault(); undo(); afterChange(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey || !RT.cur) return;
+    const k = e.key, bop = RT.mode === 'bop';
+    RT.entered = [];
+    let handled = true;
+    if (/^[0-9]$/.test(k) && !bop){ const v = +k * RT.sign; RT.sign = 1; enter(v === 0 ? 0 : v); }
+    else if (k === '-' || k === 'Subtract'){ if (bop) enter('-'); else RT.sign = -1; }
+    else if (bop && (k === '+' || k === 'p' || k === 'P')) enter('+');
+    else if (bop && (k === 'n' || k === 'N')) enter('-');
+    else if (k === 'Backspace' || k === 'Delete'){ if (getVal(RT.cur) != null) setValue(RT.cur, null); }
+    else if (k === 'ArrowRight' || (k === 'Tab' && !e.shiftKey)) step(1);
+    else if (k === 'ArrowLeft' || (k === 'Tab' && e.shiftKey)) step(-1);
+    else if (k === 'Enter'){ e.preventDefault(); editCell(RT.cur); return; }
+    else handled = false;
+    if (handled){ e.preventDefault(); afterChange(); }
+  });
+
+  window.addEventListener('beforeprint', fitPrint);
+  window.addEventListener('afterprint', () => { $('#sheet').style.zoom = ''; });
+}
+
+function editCell(r){
+  const el = cellEls.get(keyOf(r));
+  if (!el) return;
+  RT.mode = r.m; RT.cur = r; RT.curByMode[r.m] = r;
+  paintCursor(); refreshStatus();
+  const inp = document.createElement('input');
+  inp.className = 'cedit';
+  inp.value = fmt(r.m, getVal(r)).replace('−', '-');
+  el.textContent = '';
+  el.appendChild(inp);
+  inp.focus();
+  inp.select();
+  let done = false;
+  const finish = commit => {
+    if (done) return;
+    done = true;
+    if (commit){
+      const raw = inp.value.trim().replace(/[−–]/g, '-');
+      let v;
+      if (raw === '') v = null;
+      else if (r.m === 'bop') v = /^[+pP]/.test(raw) ? '+' : /^[-nN]/.test(raw) ? '-' : undefined;
+      else {
+        v = /^-?\d+$/.test(raw) ? parseInt(raw, 10) : undefined;
+        if (v !== undefined && (v < MD[r.m].min || v > MD[r.m].max)) v = undefined;
+      }
+      if (v === undefined) warn(`Geçersiz değer: ${raw}`);
+      else if (v !== getVal(r)) setValue(r, v);
+    }
+    renderCell(r);
+    afterChange();
+  };
+  inp.addEventListener('keydown', ev => {
+    ev.stopPropagation();
+    if (ev.key === 'Enter') finish(true);
+    else if (ev.key === 'Escape') finish(false);
+  });
+  inp.addEventListener('blur', () => finish(true));
+}
+
+/* ---------- Başlangıç ---------- */
+function init(){
+  document.body.removeAttribute('class');
+  const emb = readEmbedded();
+  if (emb) S = normalizeState(emb);
+  else {
+    const dr = lsGet(DRAFT_KEY);
+    if (dr && hasData(dr)){
+      const when = dr._ts ? new Date(dr._ts).toLocaleString('tr-TR', {dateStyle:'short', timeStyle:'short'}) : '';
+      $('#draftInfo').textContent = [dr.patient?.name, when].filter(Boolean).join(' · ') ? `(${[dr.patient?.name, when].filter(Boolean).join(' · ')})` : '';
+      $('#draftBanner').hidden = false;
+      $('#draftRestore').addEventListener('click', () => { loadState(dr); $('#draftBanner').hidden = true; okMsg('Taslak geri yüklendi.'); });
+      $('#draftDiscard').addEventListener('click', () => { lsDel(DRAFT_KEY); $('#draftBanner').hidden = true; });
+    }
+  }
+  bindUI();
+  fillPatient();
+  rebuild();
+  afterChange();
+  if (!SR) warn('Bu tarayıcı sesli girişi desteklemiyor — Google Chrome veya Microsoft Edge ile açın. Klavyeyle giriş yine de çalışır.');
+  else info('Başlamak için “Mikrofonu aç”a basın, ardından “Chart\'ı başlat” deyin.');
+  window.__perio = {handleText, parse, state: () => S, rt: () => RT};
+}
+init();
+})();
+</script>
+</body>
+</html>
