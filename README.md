@@ -1,5 +1,7 @@
 # Periodontal Chart-Voice
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23881985.svg)](https://doi.org/10.5281/zenodo.23881985)
+
 Sesli komutlarla doldurulan periodontal chart. Hekim muayene ederken ölçümleri söyler, chart kendiliğinden dolar; muayene bitince chart yazdırılır veya bilgisayara kaydedilir. Ayrıca bir asistanın not almasına gerek kalmaz.
 
 **Uygulamayı aç:** https://yakupkaankalayciperio.github.io/periodontal-chart-voice/
@@ -66,6 +68,14 @@ Chart verileri hiçbir sunucuya gönderilmez; yalnızca kullanılan tarayıcıda
 
 Bu yazılım bir dokümantasyon aracıdır; teşhis koymaz, tedavi önermez ve tıbbi cihaz olarak onaylanmamıştır. Girilen değerlerin doğruluğundan kullanan hekim sorumludur. Yazılım "olduğu gibi" sunulur; hiçbir garanti verilmez.
 
+## Atıf
+
+Bu yazılımı kullanırsanız lütfen şu şekilde atıf yapın:
+
+Kalaycı, Y. K. (2026). *Periodontal Chart-Voice* [Bilgisayar yazılımı]. Zenodo. https://doi.org/10.5281/zenodo.23881985
+
+Bu DOI tüm sürümleri kapsar ve her zaman en son sürümü gösterir. Belirli bir sürüme atıf için o sürümün DOI'sini kullanın (v1.0.0: [10.5281/zenodo.23881986](https://doi.org/10.5281/zenodo.23881986)).
+
 ## Lisans
 
 © 2026 Yakup Kaan Kalaycı · [Creative Commons Atıf-GayriTicari-AynıLisanslaPaylaş 4.0 Uluslararası (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.tr)
@@ -90,3 +100,5 @@ Ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
 - This is a documentation tool. It does not diagnose and is not an approved medical device. The clinician is responsible for the accuracy of all entries.
 
 Licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (Attribution-NonCommercial-ShareAlike 4.0 International), with an additional permission: dentists, physicians and other healthcare professionals, and their clinics, hospitals and institutions (including private, fee-charging practices), may use the software free of charge for patient care, clinical documentation, teaching and research. Selling it or offering it as part of a paid product or service requires the author's permission. See [LICENSE](LICENSE). Created by Yakup Kaan Kalaycı, DDS, PhD.
+
+Cite as: Kalaycı, Y. K. (2026). *Periodontal Chart-Voice* [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23881985
